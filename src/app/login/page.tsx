@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Lock, Mail, AlertCircle, Shield } from 'lucide-react';
+import { Lock, User, AlertCircle, Shield } from 'lucide-react';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,15 +19,19 @@ export default function LoginPage() {
     setError(null);
 
     try {
+      const cleanUsername = username.trim().toLowerCase();
+      // Mengubah username menjadi sintaks internal email Supabase jika pengguna menginput username
+      const authIdentifier = cleanUsername.includes('@')
+        ? cleanUsername
+        : `${cleanUsername}@magetantimur.internal`;
+
       const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
+        email: authIdentifier,
         password,
       });
 
       if (authError) {
-        setError(authError.message === 'Invalid login credentials' 
-          ? 'Email atau password salah. Silakan coba lagi.' 
-          : authError.message);
+        setError('Username atau password salah. Silakan periksa kembali.');
         setLoading(false);
         return;
       }
@@ -64,17 +68,17 @@ export default function LoginPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1">
-                Email
+                Username
               </label>
               <div className="relative">
-                <Mail className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <User className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
-                  type="email"
+                  type="text"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-blue-500 transition text-sm"
-                  placeholder="admin@magetantimur.id"
+                  placeholder="masukkan username"
                 />
               </div>
             </div>
@@ -97,12 +101,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <a href="/forgot-password" className="text-blue-400 hover:underline">
-              Lupa password?
-            </a>
-          </div>
-
           <button
             type="submit"
             disabled={loading}
@@ -114,7 +112,7 @@ export default function LoginPage() {
 
         <div className="text-center pt-4 border-t border-slate-700/50">
           <p className="text-xs text-slate-500">
-            Pendaftaran publik ditutup. Hubungi Superadmin untuk pembuatan akun.
+            Akun dibuat khusus oleh Superadmin (Login menggunakan Username & Password).
           </p>
         </div>
       </div>
